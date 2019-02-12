@@ -21,6 +21,9 @@ namespace GalaxyMarauders {
 
             var enemySystem = new EnemySystem(this);
             Components.Add(enemySystem);
+
+            var playerSystem = new PlayerSystem(this);
+            Components.Add(playerSystem);
         }
 
         /// <summary>
@@ -31,7 +34,7 @@ namespace GalaxyMarauders {
         /// </summary>
         protected override void Initialize() {
             _scalingBatch = new SpriteBatch(GraphicsDevice);
-            _scalingTarget = new RenderTarget2D(GraphicsDevice, 240, 256);
+            _scalingTarget = new RenderTarget2D(GraphicsDevice, 224, 256);
 
             base.Initialize();
         }
