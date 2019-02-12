@@ -1,59 +1,31 @@
 using System.Collections.Generic;
+using GalaxyMarauders.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
+using MonoGame.Extended.Entities;
+using MonoGame.Extended.Entities.Systems;
 
 namespace GalaxyMarauders.Systems {
-    public class EnemySystem : DrawableGameComponent {
-        private enum AlienStyle {
-            Top = 0,
-            Middle = 1,
-            Bottom = 2
-        }
-
-        private class Alien {
-            public Vector2 Position { get; set; }
-            public readonly AlienStyle Style;
-
-            public Alien(AlienStyle style) {
-                Style = style;
-            }
-        }
-
+    public class EnemySystem : EntityUpdateSystem {
         private const int HorizontalSpeed = 2;
         private const int VerticalSpeed = 2;
 
-        private SpriteBatch _spriteBatch;
-        private Texture2D _atlas;
-        private LinkedList<Alien> _aliens = new LinkedList<Alien>();
         private Vector2 _fleetPosition = new Vector2(32, 24);
         private float _stepTime = .05f;
         private float _countdown;
         private int _frame;
         private int _direction = HorizontalSpeed;
+        private ComponentMapper<Transform2> _transformMapper;
+        private ComponentMapper<Alien> _alienMapper;
 
 
-        public EnemySystem(Game game) : base(game) { }
+        public EnemySystem() : base(Aspect.All(typeof(Transform2), typeof(Alien))) { }
 
-        public override void Initialize() {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            for (var row = 0; row < 6; row++) {
-                var style = (AlienStyle) (row / 2);
-                for (var column = 0; column < 11; column++) {
-                    var alien = new Alien(style) {Position = new Vector2(column * 16, row * 10)};
-                    _aliens.AddLast(alien);
-                }
-            }
-
+        public override void Initialize(IComponentMapperService mapperService) {
+            _transformMapper = mapperService.GetMapper<Transform2>();
+            _alienMapper = mapperService.GetMapper<Alien>();
             _countdown = _stepTime;
-
-            base.Initialize();
-        }
-
-        protected override void LoadContent() {
-            _atlas = Game.Content.Load<Texture2D>("Aliens");
-
-            base.LoadContent();
         }
 
         public override void Update(GameTime gameTime) {
@@ -66,28 +38,14 @@ namespace GalaxyMarauders.Systems {
                     _fleetPosition += new Vector2(_direction, VerticalSpeed);
                 }
 
+                foreach (var entity in ActiveEntities) {
+                    var transform = _transformMapper.Get(entity);
+                    var alien = _alienMapper.Get(entity);
+                    transform.Position = _fleetPosition + new Vector2(alien.Column * 16, alien.Row * 10);
+                }
+
                 _countdown = _stepTime;
             }
-
-            base.Update(gameTime);
-        }
-
-        public override void Draw(GameTime gameTime) {
-            _spriteBatch.Begin();
-            foreach (var alien in _aliens) {
-                var sourceRectangle = new Rectangle(_frame * 16,
-                    (int) alien.Style * 10,
-                    16,
-                    10);
-                _spriteBatch.Draw(_atlas,
-                    _fleetPosition + alien.Position,
-                    sourceRectangle,
-                    Color.White);
-            }
-
-            _spriteBatch.End();
-
-            base.Draw(gameTime);
         }
     }
 }

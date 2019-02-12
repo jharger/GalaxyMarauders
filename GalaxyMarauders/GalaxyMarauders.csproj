@@ -46,15 +46,34 @@
     <StartupObject>GalaxyMarauders.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\Alien.cs" />
+    <Compile Include="Components\SpaceShip.cs" />
     <Compile Include="GalaxyMarauders.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\EnemySystem.cs" />
     <Compile Include="Systems\PlayerSystem.cs" />
+    <Compile Include="Systems\SpriteRenderSystem.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="MonoGame.Extended, Version=3.6.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\MonoGame.Extended.3.6.0-beta0001\lib\netstandard2.0\MonoGame.Extended.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MonoGame.Extended.Animations, Version=3.6.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\MonoGame.Extended.Animations.3.6.0-beta0001\lib\netstandard2.0\MonoGame.Extended.Animations.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MonoGame.Extended.Entities, Version=3.6.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\MonoGame.Extended.Entities.3.6.0-beta0001\lib\netstandard2.0\MonoGame.Extended.Entities.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MonoGame.Framework, Version=3.7.1.189, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\lib\net45\MonoGame.Framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

@@ -1,46 +1,33 @@
+using GalaxyMarauders.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
+using MonoGame.Extended.Entities;
+using MonoGame.Extended.Entities.Systems;
 
 namespace GalaxyMarauders.Systems {
-    public class PlayerSystem : DrawableGameComponent {
-        private SpriteBatch _spriteBatch;
-        private Texture2D _shipSprite;
-        private Vector2 _position;
+    public class PlayerSystem : EntityUpdateSystem {
+        private ComponentMapper<Transform2> _transformMapper;
 
-        public PlayerSystem(Game game) : base(game) { }
+        public PlayerSystem() : base(Aspect.All(typeof(Transform2), typeof(SpaceShip))) { }
 
-        public override void Initialize() {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _position = new Vector2(112, 236);
-
-            base.Initialize();
-        }
-
-        protected override void LoadContent() {
-            _shipSprite = Game.Content.Load<Texture2D>("Ship");
-
-            base.LoadContent();
+        public override void Initialize(IComponentMapperService mapperService) {
+            _transformMapper = mapperService.GetMapper<Transform2>();
         }
 
         public override void Update(GameTime gameTime) {
-            var keyboardState = Keyboard.GetState();
-            if (keyboardState.IsKeyDown(Keys.Left) && _position.X >= 16) {
-                _position += new Vector2(-1f, 0f);
+            foreach (var entity in ActiveEntities) {
+                var transform = _transformMapper.Get(entity);
+
+                var keyboardState = Keyboard.GetState();
+                if (keyboardState.IsKeyDown(Keys.Left) && transform.Position.X >= 24) {
+                    transform.Position += new Vector2(-1f, 0f);
+                }
+                else if (keyboardState.IsKeyDown(Keys.Right) && transform.Position.X <= 200) {
+                    transform.Position += new Vector2(1f, 0f);
+                }
             }
-            else if (keyboardState.IsKeyDown(Keys.Right) && _position.X <= 192) {
-                _position += new Vector2(1f, 0f);
-            }
-
-            base.Update(gameTime);
-        }
-
-        public override void Draw(GameTime gameTime) {
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(_shipSprite, _position);
-            _spriteBatch.End();
-
-            base.Draw(gameTime);
         }
     }
 }

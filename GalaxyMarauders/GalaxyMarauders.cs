@@ -1,7 +1,15 @@
-﻿using GalaxyMarauders.Systems;
+﻿using System.Xml;
+using GalaxyMarauders.Components;
+using GalaxyMarauders.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
+using MonoGame.Extended.Animations;
+using MonoGame.Extended.Animations.SpriteSheets;
+using MonoGame.Extended.Entities;
+using MonoGame.Extended.Sprites;
+using MonoGame.Extended.TextureAtlases;
 
 namespace GalaxyMarauders {
     /// <summary>
@@ -12,18 +20,14 @@ namespace GalaxyMarauders {
         private SpriteBatch _scalingBatch;
         private RenderTarget2D _scalingTarget;
 
+        private World _world;
+
         public GalaxyMarauders() {
             _graphics = new GraphicsDeviceManager(this) {
                 PreferredBackBufferWidth = 1366, PreferredBackBufferHeight = 768
             };
 
             Content.RootDirectory = "Content";
-
-            var enemySystem = new EnemySystem(this);
-            Components.Add(enemySystem);
-
-            var playerSystem = new PlayerSystem(this);
-            Components.Add(playerSystem);
         }
 
         /// <summary>
@@ -33,6 +37,11 @@ namespace GalaxyMarauders {
         /// and initialize them as well.
         /// </summary>
         protected override void Initialize() {
+            _world = new WorldBuilder().AddSystem(new SpriteRenderSystem(GraphicsDevice))
+                .AddSystem(new PlayerSystem())
+                .AddSystem(new EnemySystem())
+                .Build();
+
             _scalingBatch = new SpriteBatch(GraphicsDevice);
             _scalingTarget = new RenderTarget2D(GraphicsDevice, 224, 256);
 
@@ -43,7 +52,39 @@ namespace GalaxyMarauders {
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
         /// </summary>
-        protected override void LoadContent() { }
+        protected override void LoadContent() {
+            var ship = Content.Load<Texture2D>("ship");
+            var shipSprite = new Sprite(ship);
+            var transform = new Transform2(new Vector2(112, 236));
+            var entity = _world.CreateEntity();
+            entity.Attach(shipSprite);
+            entity.Attach(transform);
+            entity.Attach(new SpaceShip());
+
+
+            var aliens = Content.Load<Texture2D>("aliens");
+            var alienAtlas = TextureAtlas.Create("aliens",
+                aliens,
+                16,
+                10);
+
+            var animationFactory = new SpriteSheetAnimationFactory(alienAtlas);
+            animationFactory.Add("alien0", new SpriteSheetAnimationData(new[] {0, 1}, 0.5f));
+            animationFactory.Add("alien1", new SpriteSheetAnimationData(new[] {2, 3}, 0.5f));
+            animationFactory.Add("alien2", new SpriteSheetAnimationData(new[] {4, 5}, 0.5f));
+
+            for (var row = 0; row < 6; row++) {
+                var style = row / 2;
+                for (var column = 0; column < 11; column++) {
+                    var alienEntity = _world.CreateEntity();
+                    var alienTransform = new Transform2(new Vector2(column * 16, row * 10));
+                    var alien = new Alien {Row = row, Column = column};
+                    alienEntity.Attach(new AnimatedSprite(animationFactory, $"alien{style}"));
+                    alienEntity.Attach(alienTransform);
+                    alienEntity.Attach(alien);
+                }
+            }
+        }
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -63,6 +104,7 @@ namespace GalaxyMarauders {
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            _world.Update(gameTime);
             base.Update(gameTime);
         }
 
@@ -88,6 +130,7 @@ namespace GalaxyMarauders {
             GraphicsDevice.Clear(Color.Black);
 
             // This will signal the subsystems to draw
+            _world.Draw(gameTime);
             base.Draw(gameTime);
 
             // Draw the game playing field to the main viewport
