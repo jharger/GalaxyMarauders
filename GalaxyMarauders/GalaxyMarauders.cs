@@ -135,7 +135,7 @@ namespace GalaxyMarauders {
 
             // Draw the game playing field to the main viewport
             GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Clear(new Color(14, 16, 17));
+            GraphicsDevice.Clear(new Color(34, 36, 37));
             _scalingBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
             _scalingBatch.Draw(_scalingTarget,
                 new Rectangle(offsetX,
