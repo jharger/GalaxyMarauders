@@ -8,15 +8,23 @@ using MonoGame.Extended.Entities.Systems;
 
 namespace GalaxyMarauders.Systems {
     public class PlayerSystem : EntityUpdateSystem {
-        private ComponentMapper<Transform2> _transformMapper;
+        private const float BulletTimeout = 0.33f;
 
-        public PlayerSystem() : base(Aspect.All(typeof(Transform2), typeof(SpaceShip))) { }
+        private readonly EntityFactory _entityFactory;
+        private ComponentMapper<Transform2> _transformMapper;
+        private float _bulletCountdown;
+
+        public PlayerSystem(EntityFactory entityFactory) : base(Aspect.All(typeof(Transform2), typeof(SpaceShip))) {
+            _entityFactory = entityFactory;
+        }
 
         public override void Initialize(IComponentMapperService mapperService) {
             _transformMapper = mapperService.GetMapper<Transform2>();
         }
 
         public override void Update(GameTime gameTime) {
+            _bulletCountdown -= gameTime.GetElapsedSeconds();
+
             foreach (var entity in ActiveEntities) {
                 var transform = _transformMapper.Get(entity);
 
@@ -26,6 +34,11 @@ namespace GalaxyMarauders.Systems {
                 }
                 else if (keyboardState.IsKeyDown(Keys.Right) && transform.Position.X <= 200) {
                     transform.Position += new Vector2(1f, 0f);
+                }
+
+                if (keyboardState.IsKeyDown(Keys.Z) && _bulletCountdown <= 0) {
+                    _bulletCountdown = BulletTimeout;
+                    _entityFactory.SpawnBullet(transform.WorldPosition);
                 }
             }
         }

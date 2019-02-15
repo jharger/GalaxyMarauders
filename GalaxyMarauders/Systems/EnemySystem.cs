@@ -29,7 +29,7 @@ namespace GalaxyMarauders.Systems {
         }
 
         public override void Update(GameTime gameTime) {
-            _countdown -= (float) gameTime.ElapsedGameTime.TotalSeconds;
+            _countdown -= gameTime.GetElapsedSeconds();
             if (_countdown <= 0f) {
                 _frame = (_frame + 1) % 2;
                 _fleetPosition += new Vector2(_direction, 0f);

@@ -19,6 +19,7 @@ namespace GalaxyMarauders {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _scalingBatch;
         private RenderTarget2D _scalingTarget;
+        private EntityFactory _entityFactory;
 
         private World _world;
 
@@ -26,6 +27,8 @@ namespace GalaxyMarauders {
             _graphics = new GraphicsDeviceManager(this) {
                 PreferredBackBufferWidth = 1366, PreferredBackBufferHeight = 768
             };
+
+            _entityFactory = new EntityFactory(this);
 
             Content.RootDirectory = "Content";
         }
@@ -37,10 +40,14 @@ namespace GalaxyMarauders {
         /// and initialize them as well.
         /// </summary>
         protected override void Initialize() {
-            _world = new WorldBuilder().AddSystem(new SpriteRenderSystem(GraphicsDevice))
-                .AddSystem(new PlayerSystem())
+            var worldBuilder = new WorldBuilder();
+            var playerSystem = new PlayerSystem(_entityFactory);
+            _world = worldBuilder.AddSystem(new SpriteRenderSystem(GraphicsDevice))
+                .AddSystem(playerSystem)
                 .AddSystem(new EnemySystem())
+                .AddSystem(new ShipBulletMovementSystem())
                 .Build();
+            _entityFactory.World = _world;
 
             _scalingBatch = new SpriteBatch(GraphicsDevice);
             _scalingTarget = new RenderTarget2D(GraphicsDevice, 224, 256);
@@ -53,35 +60,14 @@ namespace GalaxyMarauders {
         /// all of your content.
         /// </summary>
         protected override void LoadContent() {
-            var ship = Content.Load<Texture2D>("ship");
-            var shipSprite = new Sprite(ship);
-            var transform = new Transform2(new Vector2(112, 236));
-            var entity = _world.CreateEntity();
-            entity.Attach(shipSprite);
-            entity.Attach(transform);
-            entity.Attach(new SpaceShip());
+            _entityFactory.LoadContent();
 
-
-            var aliens = Content.Load<Texture2D>("aliens");
-            var alienAtlas = TextureAtlas.Create("aliens",
-                aliens,
-                16,
-                10);
-
-            var animationFactory = new SpriteSheetAnimationFactory(alienAtlas);
-            animationFactory.Add("alien0", new SpriteSheetAnimationData(new[] {0, 1}, 0.5f));
-            animationFactory.Add("alien1", new SpriteSheetAnimationData(new[] {2, 3}, 0.5f));
-            animationFactory.Add("alien2", new SpriteSheetAnimationData(new[] {4, 5}, 0.5f));
+            _entityFactory.SpawnShip();
 
             for (var row = 0; row < 6; row++) {
                 var style = row / 2;
                 for (var column = 0; column < 11; column++) {
-                    var alienEntity = _world.CreateEntity();
-                    var alienTransform = new Transform2(new Vector2(column * 16, row * 10));
-                    var alien = new Alien {Row = row, Column = column};
-                    alienEntity.Attach(new AnimatedSprite(animationFactory, $"alien{style}"));
-                    alienEntity.Attach(alienTransform);
-                    alienEntity.Attach(alien);
+                    _entityFactory.SpawnAlien(row, column, style);
                 }
             }
         }
