@@ -46,6 +46,7 @@ namespace GalaxyMarauders {
                 .AddSystem(playerSystem)
                 .AddSystem(new EnemySystem())
                 .AddSystem(new ShipBulletMovementSystem())
+                .AddSystem(new ShipBulletAlienCollisionSystem())
                 .Build();
             _entityFactory.World = _world;
 
